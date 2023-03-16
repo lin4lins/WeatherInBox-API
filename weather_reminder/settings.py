@@ -154,3 +154,4 @@ load_dotenv()
 API_KEY = os.environ.get('API_KEY')
 LIMIT = 1
 UNITS = 'metric'
+OPENWEATHER_DOMAIN = 'http://api.openweathermap.org'
