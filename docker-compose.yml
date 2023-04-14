@@ -7,6 +7,9 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    networks:
+      - my-network
+
   app:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -22,3 +25,10 @@ services:
       - db
     env_file:
       - .env
+    networks:
+      my-network:
+        aliases:
+          - api
+
+networks:
+  my-network:
