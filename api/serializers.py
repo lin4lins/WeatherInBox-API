@@ -15,10 +15,11 @@ class UserSerializer(serializers.ModelSerializer):
         - last_name (optional): The user's last name.
         - email (optional): The user's email address.
         - webhook_url (optional): A webhook URL associated with the user.
+        - receive_emails (optional): A boolean which means whether the user wants to receive weather updates wia email.
     """
     class Meta:
         model = User
-        fields = ['id', 'username', 'password', 'first_name', 'last_name', 'email', 'webhook_url']
+        fields = ['id', 'username', 'password', 'first_name', 'last_name', 'email', 'webhook_url', 'receive_emails']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -56,6 +57,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
                        This field is read-only, and is taken from the context of the query.
     - city (required): A nested object representing the city the user is subscribed to.
     - times_per_day (required): The number of times per day the user wishes to receive notifications for this subscription.
+    - is_active (required): A boolean, which says whether the subscription is active.
     """
     user = UserSerializer(read_only=True)
     city = CitySerializer(validators=[])  # City validators are ignored because having a requested city in db is OK
@@ -63,7 +65,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = '__all__'
-        read_only_fields = ['user', 'created_at', 'is_active']
+        read_only_fields = ['user', 'created_at']
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -73,6 +75,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return subscription
 
     def update(self, instance, validated_data):
-        instance.times_per_day = validated_data.pop('times_per_day')
+        instance.times_per_day = validated_data.get('times_per_day', instance.times_per_day)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return instance

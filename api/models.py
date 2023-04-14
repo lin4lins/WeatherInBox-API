@@ -9,6 +9,7 @@ from api.managers import CityManager
 
 class User(AbstractUser):
     webhook_url = models.CharField(blank=True, max_length=255)
+    receive_emails = models.BooleanField(default=True)
 
     def __str__(self):
         return f'{self.id}, {self.username}'
@@ -38,7 +39,7 @@ class Subscription(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        # Ensure that there are no duplicates of the same user and country city
+        # Ensure that there are no duplicates of the same user and country+city
         unique_together = ('user', 'city')
 
     def __str__(self):
