@@ -47,7 +47,7 @@ class SubscriptionViewSetTestCase(TransactionTestCase):
         subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=6)
         response = self.client.post(self.subscription_list_url, data=SUBSCRIPTION_DATA_EXISTING_CITY, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.json().get('detail'), 'The subscription with this fields already exists.')
+        self.assertEqual(response.json().get('detail'), 'The subscription with these fields already exists.')
         subscription.delete()
 
     def test_update(self):

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from api.managers import CityManager
 
@@ -8,6 +9,7 @@ from api.managers import CityManager
 
 
 class User(AbstractUser):
+    email = models.EmailField(_("email address"), unique=True)
     webhook_url = models.CharField(blank=True, max_length=255)
     receive_emails = models.BooleanField(default=True)
 
