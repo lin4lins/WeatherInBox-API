@@ -17,7 +17,7 @@ def get_country_code(country_name: str) -> str:
     """
     country = pycountry.countries.get(name=country_name)
     if not country:
-        raise NotFound()
+        raise NotFound({'country_name': ['Not found.']})
 
     return country.alpha_2
 
@@ -39,7 +39,7 @@ def get_lat_lon_values(city_name: str, country_name: str) -> list:
               'appid': API_KEY,
               'limit': LIMIT}
     response = requests.get(base_url, params=params)
-    if len(response.content) == 0:
-        raise NotFound()
+    if response.content.decode() == '[]':
+        raise NotFound({'city_name': ['Not found.']})
 
     return [response.json()[0].get('lat'), response.json()[0].get('lon')]

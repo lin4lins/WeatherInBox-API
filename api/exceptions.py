@@ -9,5 +9,5 @@ class CityChangingUnavailable(APIException):
 
 class SubscriptionAlreadyExists(APIException):
     status_code = 400
-    default_detail = 'The subscription with this fields already exists.'
+    default_detail = 'The subscription with these fields already exists.'
     default_code = 'subscription_already_exists'
