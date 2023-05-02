@@ -23,7 +23,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class CityViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
     serializer_class = CitySerializer
     queryset = City.objects.all()
 
