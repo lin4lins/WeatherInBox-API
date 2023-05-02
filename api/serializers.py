@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
 from api.models import City, Subscription, User
 
@@ -55,23 +56,26 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     Fields:
     - user(read-only): A nested object representing the user which owns this subscription.
                        This field is read-only, and is taken from the context of the query.
-    - city (required): A nested object representing the city the user is subscribed to.
-    - times_per_day (required): The number of times per day the user wishes to receive notifications for this subscription.
-    - is_active (required): A boolean, which says whether the subscription is active.
+    - city (read-only): A nested object representing the city the user is subscribed to.
+    - times_per_day: The number of times per day the user wishes to receive notifications for this subscription.
+    - is_active: A boolean, which says whether the subscription is active.
+
+    For creation:
+    - city_id (required): An integer representing the id of the city the user is subscribed to.
+                        This field should be sent during subscription creation and update.
     """
     user = UserSerializer(read_only=True)
-    city = CitySerializer(validators=[])  # City validators are ignored because having a requested city in db is OK
+    city = CitySerializer(read_only=True)
+    city_id = serializers.PrimaryKeyRelatedField(write_only=True, queryset=City.objects.all(), source='city')
 
     class Meta:
         model = Subscription
-        fields = '__all__'
+        fields = ['id', 'user', 'city', 'times_per_day', 'is_active', 'created_at', 'city_id']
         read_only_fields = ['user', 'created_at']
 
     def create(self, validated_data):
         user = self.context['request'].user
-        city_data = validated_data.pop('city')
-        city, created = City.objects.get_or_create(**city_data)
-        subscription = Subscription.objects.create(user=user, city=city, **validated_data)
+        subscription = Subscription.objects.create(user=user, **validated_data)
         return subscription
 
     def update(self, instance, validated_data):

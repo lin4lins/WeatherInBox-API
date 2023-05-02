@@ -24,18 +24,6 @@ ADMIN_DATA = {'username': 'admin',
               'is_staff': True}
 CITY_DATA = {'name': 'Kyiv',
              'country_name': 'Ukraine'}
-CITY_DATA_2 = {'name': 'Kharkiv',
-               'country_name': 'Ukraine'}
-INVALID_CITY_DATA = {'name': 'Kyiv',
-                     'country_name': 'Test'}
-SUBSCRIPTION_DATA_NEW_CITY = {'city':
-                                  {'name': 'Kharkiv',
-                                   'country_name': 'Ukraine'},
-                              'times_per_day': '6'}
-SUBSCRIPTION_DATA_EXISTING_CITY = {'city': CITY_DATA,
-                                   'times_per_day': '6'}
-KYIV_COORDINATES = {'latitude': '50.4500336', 'longitude': '30.5241361'}
-KHARKIV_COORDINATES = {'latitude': '49.9923181', 'longitude': '36.2310146'}
 
 
 def create_user(data: dict) -> User:

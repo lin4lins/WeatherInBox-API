@@ -61,21 +61,21 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             raise SubscriptionAlreadyExists()
 
     def partial_update(self, request, *args, **kwargs):
-        is_city_data_in_request = request.data.get('city', False)
-        if is_city_data_in_request:
+        is_city_id_in_request = request.data.get('city_id', None)
+        if is_city_id_in_request:
             raise CityChangingUnavailable()
 
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        city_data = request.data.get('city')
+        city_id = request.data.get('city_id', None)
         try:
-            city = City.objects.get(**city_data)
+            city = City.objects.get(id=city_id)
         except City.DoesNotExist:
             raise CityChangingUnavailable()
 
-        if city.name != city_data.get('name') or city.country_name != city_data.get('country_name'):
+        if city.id != city_id:
             raise CityChangingUnavailable()
 
         return super().update(request, *args, **kwargs)
