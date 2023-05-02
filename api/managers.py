@@ -9,9 +9,3 @@ class CityManager(models.Manager):
         city.latitude, city.longitude = get_lat_lon_values(city.name, city.country_name)
         city.save()
         return city
-
-    def get_or_create(self, **kwargs):
-        try:
-            return self.get(**kwargs), False
-        except self.model.DoesNotExist:
-            return self.create(**kwargs), True

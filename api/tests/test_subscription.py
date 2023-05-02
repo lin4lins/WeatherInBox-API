@@ -4,10 +4,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from api.models import City, Subscription
-from api.tests import (CITY_DATA, CITY_DATA_2, KHARKIV_COORDINATES,
-                       SUBSCRIPTION_DATA_EXISTING_CITY,
-                       SUBSCRIPTION_DATA_NEW_CITY, UPDATED_TIMES_PER_DAY,
-                       USER_DATA, create_user, login_user)
+from api.tests import (CITY_DATA, USER_DATA, create_user, login_user, UPDATED_TIMES_PER_DAY)
 
 
 class SubscriptionViewSetTestCase(TransactionTestCase):
@@ -18,6 +15,8 @@ class SubscriptionViewSetTestCase(TransactionTestCase):
         self.user_token = login_user(USER_DATA)
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.user_token)
         self.city = City.objects.create(**CITY_DATA)
+        self.subscription_valid_data = {'city_id': self.city.id, 'times_per_day': 2}
+        self.subscription_invalid_data = {'city_id': 99, 'times_per_day': 2}
 
     def tearDown(self):
         self.user.delete()
@@ -27,44 +26,49 @@ class SubscriptionViewSetTestCase(TransactionTestCase):
     def get_subscription_detail_url(subscription_id: int):
         return reverse('subscription-detail', args=[subscription_id])
 
-    def test_create_city_not_exists(self):
-        response = self.client.post(self.subscription_list_url, data=SUBSCRIPTION_DATA_NEW_CITY, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json().get('city').get('latitude'), KHARKIV_COORDINATES.get('latitude'))
-        self.assertEqual(response.json().get('city').get('longitude'), KHARKIV_COORDINATES.get('longitude'))
-        Subscription.objects.get(times_per_day=SUBSCRIPTION_DATA_NEW_CITY.get('times_per_day')).delete()
-        City.objects.get(name=SUBSCRIPTION_DATA_NEW_CITY.get('city').get('name')).delete()
-
     def test_create_city_exists(self):
-        response = self.client.post(self.subscription_list_url, data=SUBSCRIPTION_DATA_EXISTING_CITY, format='json')
+        response = self.client.post(self.subscription_list_url, data=self.subscription_valid_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.json().get('city').get('latitude'), str(self.city.latitude))
-        self.assertEqual(response.json().get('city').get('longitude'), str(self.city.longitude))
         self.assertEqual(City.objects.count(), 1)
-        Subscription.objects.get(times_per_day=SUBSCRIPTION_DATA_NEW_CITY.get('times_per_day')).delete()
+        Subscription.objects.get(city=self.city).delete()
+
+    def test_create_city_not_exists(self):
+        response = self.client.post(self.subscription_list_url, data=self.subscription_invalid_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json().get('city_id')[0],
+                         f'Invalid pk \"{self.subscription_invalid_data["city_id"]}\" - object does not exist.')
 
     def test_create_subscription_exists(self):
-        subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=6)
-        response = self.client.post(self.subscription_list_url, data=SUBSCRIPTION_DATA_EXISTING_CITY, format='json')
+        subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=2)
+        response = self.client.post(self.subscription_list_url, data=self.subscription_valid_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json().get('detail'), 'The subscription with these fields already exists.')
         subscription.delete()
 
     def test_update(self):
-        subscription_data = SUBSCRIPTION_DATA_EXISTING_CITY.copy()
+        subscription_data = self.subscription_valid_data.copy()
         subscription_data['times_per_day'] = UPDATED_TIMES_PER_DAY
-        subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=6)
+        subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=2)
         response = self.client.put(self.get_subscription_detail_url(subscription.id), data=subscription_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json().get('times_per_day'), UPDATED_TIMES_PER_DAY)
         subscription.delete()
 
     def test_update_with_changed_city(self):
-        subscription_data = SUBSCRIPTION_DATA_EXISTING_CITY.copy()
+        subscription_data = self.subscription_valid_data.copy()
         subscription_data['times_per_day'] = UPDATED_TIMES_PER_DAY
-        subscription_data['city'] = CITY_DATA_2
-        subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=6)
-        response = self.client.put(self.get_subscription_detail_url(subscription.id), data=subscription_data, format='json')
+        subscription_data['city_id'] = 90
+        subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=2)
+        response = self.client.put(self.get_subscription_detail_url(subscription.id), data=subscription_data,
+                                   format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json().get('detail'), 'Changing the subscription city is not available.')
+        subscription.delete()
+
+    def test_update_without_city_id(self):
+        subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=2)
+        response = self.client.put(self.get_subscription_detail_url(subscription.id),
+                                   data={'times_per_day': UPDATED_TIMES_PER_DAY}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json().get('detail'), 'Changing the subscription city is not available.')
         subscription.delete()
@@ -78,8 +82,9 @@ class SubscriptionViewSetTestCase(TransactionTestCase):
         subscription.delete()
 
     def test_partial_update_with_city(self):
-        subscription_data = SUBSCRIPTION_DATA_EXISTING_CITY.copy()
+        subscription_data = self.subscription_valid_data.copy()
         subscription_data['times_per_day'] = UPDATED_TIMES_PER_DAY
+        subscription_data['city_id'] = 90
         subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=6)
         response = self.client.patch(self.get_subscription_detail_url(subscription.id),
                                      data=subscription_data, format='json')
