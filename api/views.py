@@ -1,12 +1,12 @@
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from rest_framework import viewsets
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from api.exceptions import CityChangingUnavailable, SubscriptionAlreadyExists
 from api.models import City, Subscription, User
 from api.serializers import (CitySerializer, SubscriptionSerializer,
                              UserSerializer)
-
+from api.tasks import task_execute
 # Create your views here.
 
 
@@ -53,9 +53,12 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Subscription.objects.filter(user=user)
 
-    def create(self, request, *args, **kwargs):
+    def perform_create(self, serializer):
         try:
-            return super().create(request, *args, **kwargs)
+            with transaction.atomic():
+                instance = serializer.save()
+                job_params = {"sub_id": instance.id}
+                transaction.on_commit(lambda: task_execute.delay(job_params))
 
         except IntegrityError:
             raise SubscriptionAlreadyExists()

@@ -22,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^6_frah@n)96%jq9+who)w%)s+y@%qdy9t1oda(u97h!!+uf_!'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(int(os.environ.get('DEBUG')))
 
-ALLOWED_HOSTS = ['0.0.0.0', 'localhost', 'api']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
@@ -96,11 +96,11 @@ WSGI_APPLICATION = 'weather_reminder.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('POSTGRES_NAME'),
-        'USER': os.environ.get('POSTGRES_USER'),
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': 'db',
-        'PORT': 5432,
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }
 }
 
@@ -151,3 +151,7 @@ API_KEY = os.environ.get('API_KEY')
 LIMIT = 1
 UNITS = 'metric'
 OPENWEATHER_DOMAIN = 'http://api.openweathermap.org'
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND')
+CELERY_TIMEZONE='Europe/Kyiv'
