@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
-from api.models import City, Subscription, User
+from api.models import City, Subscription, User, Weather
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -83,3 +82,35 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return instance
+
+
+class WeatherSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for the Weather model.
+
+    Serializes and deserializes Weather instances to and from JSON.
+
+    Fields:
+    - city (read-only): A foreign key to a City instance that the Weather data is associated with.
+    - temperature: The current temperature in degrees Celsius.
+    - feels_like: The current "feels like" temperature in degrees Celsius.
+    - min_temperature: The minimum temperature in degrees Celsius for the day.
+    - max_temperature: The maximum temperature in degrees Celsius for the day.
+    - wind_speed: The current wind speed in meters per second.
+    - rain_1h: The rain volume for the last 1 hour, in millimeters (optional).
+    - snow_1h: The snow volume for the last 1 hour, in millimeters (optional).
+    - pressure: The current atmospheric pressure in hPa.
+    - humidity: The current relative humidity as a percentage.
+    - visibility: The current visibility in meters.
+    - cloudiness: The current cloudiness as a percentage.
+    - sunrise: The time of sunrise for the current day.
+    - sunset: The time of sunset for the current day.
+    - created_at (read-only): The date and time when the Weather instance was created.
+
+    """
+
+    city = CitySerializer(read_only=True)
+
+    class Meta:
+        model = Weather
+        fields = '__all__'

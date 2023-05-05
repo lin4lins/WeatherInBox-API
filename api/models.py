@@ -46,3 +46,19 @@ class Subscription(models.Model):
 
     def __str__(self):
         return f'{self.user}, {self.city}'
+
+
+class Weather(models.Model):
+    city = models.ForeignKey('City', on_delete=models.CASCADE, related_name='weather_data')
+    temperature = models.DecimalField(max_digits=4, decimal_places=2)
+    feels_like = models.DecimalField(max_digits=4, decimal_places=2)
+    min_temperature = models.DecimalField(max_digits=4, decimal_places=2)
+    max_temperature = models.DecimalField(max_digits=4, decimal_places=2)
+    wind_speed = models.DecimalField(max_digits=4, decimal_places=2)
+    rain_1h = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    snow_1h = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    pressure = models.IntegerField()
+    humidity = models.IntegerField()
+    visibility = models.IntegerField()
+    cloudiness = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
