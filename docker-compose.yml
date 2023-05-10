@@ -35,11 +35,12 @@ services:
 
   celery:
     build: .
-    command: celery -A weather_reminder worker --loglevel info
+    command: celery -A weather_reminder worker --loglevel=info --logfile=celery.log
     volumes:
       - .:/app
     depends_on:
       - redis
+      - db
     environment:
       - DJANGO_SETTINGS_MODULE=weather_reminder.settings
     env_file:
@@ -49,11 +50,12 @@ services:
 
   celery-beat:
     build: .
-    command: celery -A weather_reminder beat --loglevel info
+    command: celery -A weather_reminder beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
       - .:/app
     depends_on:
       - redis
+      - db
     environment:
       - DJANGO_SETTINGS_MODULE=weather_reminder.settings
     env_file:

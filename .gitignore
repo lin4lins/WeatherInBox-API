@@ -2,3 +2,5 @@
 .env
 data
 api/migrations/
+celerybeat-schedule
+celery.log
