@@ -74,4 +74,6 @@ def calculate_schedule_datetime(task_frequency: int) -> datetime:
     next_task_index = math.ceil(elapsed_seconds_since_midnight / task_interval_seconds)
     next_task_time_seconds = task_interval_seconds * next_task_index
     next_schedule_timestamp = next_task_time_seconds + today_midnight_timestamp
-    return datetime.fromtimestamp(next_schedule_timestamp)
+    naive_datetime = datetime.fromtimestamp(next_schedule_timestamp)
+    aware_datetime = timezone.make_aware(naive_datetime, timezone.get_default_timezone())
+    return aware_datetime
