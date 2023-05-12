@@ -3,7 +3,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from api.managers import CityManager
+from api.managers import CityManager, WeatherManager
+
 
 # Create your models here.
 
@@ -62,3 +63,5 @@ class Weather(models.Model):
     visibility = models.IntegerField()
     cloudiness = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = WeatherManager()

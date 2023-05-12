@@ -91,7 +91,7 @@ class WeatherSerializer(serializers.ModelSerializer):
     Serializes and deserializes Weather instances to and from JSON.
 
     Fields:
-    - city (read-only): A foreign key to a City instance that the Weather data is associated with.
+    - city: A foreign key to a City instance that the Weather data is associated with.
     - temperature: The current temperature in degrees Celsius.
     - feels_like: The current "feels like" temperature in degrees Celsius.
     - min_temperature: The minimum temperature in degrees Celsius for the day.
@@ -105,7 +105,7 @@ class WeatherSerializer(serializers.ModelSerializer):
     - cloudiness: The current cloudiness as a percentage.
     - sunrise: The time of sunrise for the current day.
     - sunset: The time of sunset for the current day.
-    - created_at (read-only): The date and time when the Weather instance was created.
+    - created_at: The date and time when the Weather instance was created.
 
     """
 
@@ -114,3 +114,19 @@ class WeatherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Weather
         fields = '__all__'
+        read_only_fields = (
+            'temperature',
+            'feels_like',
+            'min_temperature',
+            'max_temperature',
+            'wind_speed',
+            'rain_1h',
+            'snow_1h',
+            'pressure',
+            'humidity',
+            'visibility',
+            'cloudiness',
+            'sunrise',
+            'sunset',
+            'created_at',
+        )
