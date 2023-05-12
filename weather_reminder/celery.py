@@ -8,11 +8,11 @@ import time
 from datetime import datetime
 
 import django
+from django.utils import timezone
 
 django.setup()
 
-
-from celery import Celery, signals
+from celery import Celery
 from celery.utils.log import get_task_logger
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
 
@@ -27,26 +27,20 @@ app.autodiscover_tasks()
 logger = get_task_logger(__name__)
 
 
-@signals.worker_ready.connect
-def schedule_active_subscriptions(sender, **kwargs):
-    for sub in Subscription.objects.filter(is_active=True):
-        task_interval_seconds = calculate_task_interval_seconds(sub.times_per_day)
-        task_params = {'sub_id': sub.id}
+def schedule_new_subscription(sub_id):
+    sub = Subscription.objects.get(id=sub_id)
+    task_interval_seconds = calculate_task_interval_seconds(sub.times_per_day)
+    interval, is_interval_created = IntervalSchedule.objects.get_or_create(every=task_interval_seconds,
+                                                                           period=IntervalSchedule.SECONDS)
+    PeriodicTask.objects.create(
+        name=f'{sub.id}',
+        task='api.tasks.send_weather_via_email',
+        interval=interval,
+        args=json.dumps([sub.id]),
+        start_time=calculate_schedule_datetime(sub.times_per_day)
+    )
 
-        interval, is_interval_created = IntervalSchedule.objects.get_or_create(
-            every=task_interval_seconds,
-            period=IntervalSchedule.SECONDS)
-
-        periodic_task, is_task_created = PeriodicTask.objects.get_or_create(
-            name=f'Sub №{sub.id} on-startup send email',
-            task='api.tasks.send_weather_via_email',
-            interval=interval,
-            kwargs=json.dumps(task_params),
-        )
-
-        if is_task_created:
-            periodic_task.start_time = calculate_schedule_datetime(sub.times_per_day)
-            periodic_task.save()
+    logger.info(f'Periodic task for {sub.id=} have been scheduled successfully')
 
 
 def calculate_task_interval_seconds(task_frequency: int) -> float:

@@ -2,11 +2,11 @@ from django.db import IntegrityError, transaction
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from api import tasks
 from api.exceptions import CityChangingUnavailable, SubscriptionAlreadyExists
 from api.models import City, Subscription, User
 from api.serializers import (CitySerializer, SubscriptionSerializer,
                              UserSerializer)
+from weather_reminder import celery
 
 
 # Create your views here.
@@ -59,8 +59,7 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         try:
             with transaction.atomic():
                 instance = serializer.save()
-                job_params = {'sub_id': instance.id}
-                transaction.on_commit(lambda: tasks.send_weather_via_email.delay(job_params))
+                transaction.on_commit(lambda: celery.schedule_new_subscription(sub_id=instance.id))
 
         except IntegrityError:
             raise SubscriptionAlreadyExists()
