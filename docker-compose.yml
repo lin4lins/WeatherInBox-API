@@ -63,5 +63,23 @@ services:
     networks:
       - my-network
 
+  celery-flower:
+    build: .
+    command: celery -A weather_reminder flower --loglevel=DEBUG
+    environment:
+      - DJANGO_SETTINGS_MODULE=weather_reminder.settings
+    ports:
+      - "5555:5555"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+      - celery
+    networks:
+      - my-network
+
 networks:
   my-network:
