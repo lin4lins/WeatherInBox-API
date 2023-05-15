@@ -50,7 +50,7 @@ services:
 
   celery-beat:
     build: .
-    command: celery -A weather_reminder beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    command: celery -A weather_reminder beat --loglevel=info
     volumes:
       - .:/app
     depends_on:

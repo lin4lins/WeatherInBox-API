@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
     'rest_framework_simplejwt',
-    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
@@ -164,7 +163,6 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND')
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_WORKER_SEND_TASK_EVENTS = True
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
