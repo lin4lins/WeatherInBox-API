@@ -16,7 +16,8 @@ class SubscriptionViewSetTestCase(TransactionTestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.user_token)
         self.city = City.objects.create(**CITY_DATA)
         self.subscription_valid_data = {'city_id': self.city.id, 'times_per_day': 2}
-        self.subscription_invalid_data = {'city_id': 99, 'times_per_day': 2}
+        self.subscription_invalid_city = {'city_id': 99, 'times_per_day': 2}
+        self.subscription_invalid_times_per_day = {'city_id': self.city.id, 'times_per_day': 7}
 
     def tearDown(self):
         self.user.delete()
@@ -33,10 +34,10 @@ class SubscriptionViewSetTestCase(TransactionTestCase):
         Subscription.objects.get(city=self.city).delete()
 
     def test_create_city_not_exists(self):
-        response = self.client.post(self.subscription_list_url, data=self.subscription_invalid_data, format='json')
+        response = self.client.post(self.subscription_list_url, data=self.subscription_invalid_city, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json().get('city_id')[0],
-                         f'Invalid pk \"{self.subscription_invalid_data["city_id"]}\" - object does not exist.')
+                         f'Invalid pk \"{self.subscription_invalid_city["city_id"]}\" - object does not exist.')
 
     def test_create_subscription_exists(self):
         subscription = Subscription.objects.create(user=self.user, city=self.city, times_per_day=2)
@@ -44,6 +45,11 @@ class SubscriptionViewSetTestCase(TransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json().get('detail'), 'The subscription with these fields already exists.')
         subscription.delete()
+
+    def test_create_subscription_invalid_times_per_day(self):
+        response = self.client.post(self.subscription_list_url, data=self.subscription_invalid_times_per_day, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.json().get('times_per_day')[0], '"7" is not a valid choice.')
 
     def test_update(self):
         subscription_data = self.subscription_valid_data.copy()
