@@ -1,10 +1,8 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from api.managers import CityManager, WeatherManager
-
 
 # Create your models here.
 
@@ -35,9 +33,16 @@ class City(models.Model):
 
 
 class Subscription(models.Model):
+    FREQUENCIES = [
+        (1, "1"),
+        (2, "2"),
+        (4, "4"),
+        (6, "6"),
+        (12, "12"),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions', editable=False)
     city = models.ForeignKey(City, on_delete=models.DO_NOTHING, related_name='subscriptions', editable=False)
-    times_per_day = models.IntegerField(default=1, validators=[MaxValueValidator(12), MinValueValidator(1)])
+    times_per_day = models.IntegerField(default=1, choices=FREQUENCIES)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
 
@@ -51,10 +56,10 @@ class Subscription(models.Model):
 
 class Weather(models.Model):
     city = models.ForeignKey('City', on_delete=models.CASCADE, related_name='weather_data')
+    status = models.CharField(max_length=255)
+    status_description = models.CharField(max_length=255)
     temperature = models.DecimalField(max_digits=4, decimal_places=2)
     feels_like = models.DecimalField(max_digits=4, decimal_places=2)
-    min_temperature = models.DecimalField(max_digits=4, decimal_places=2)
-    max_temperature = models.DecimalField(max_digits=4, decimal_places=2)
     wind_speed = models.DecimalField(max_digits=4, decimal_places=2)
     rain_1h = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     snow_1h = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)

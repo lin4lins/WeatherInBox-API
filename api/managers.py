@@ -1,7 +1,4 @@
-from datetime import timedelta
-
 from django.db import models
-from django.utils import timezone
 
 from api.utils import get_lat_lon_values, get_weather_data_from_api
 
@@ -15,37 +12,27 @@ class CityManager(models.Manager):
 
 
 class WeatherManager(models.Manager):
-    def create(self, **kwargs):
-        weather = self.model(**kwargs)
-        weather_data = get_weather_data_from_api(weather.city.latitude, weather.city.longitude)
-        main_data = weather_data.get('main')
-        wind_data = weather_data.get('wind')
-        clouds_data = weather_data.get('clouds')
-        rain_data = weather_data.get('rain', {})
-        snow_data = weather_data.get('snow', {})
+    def create_and_populate_from_api(self, **kwargs):
+        weather_entry = self.model(**kwargs)
+        weather_api_response = get_weather_data_from_api(weather_entry.city.latitude, weather_entry.city.longitude)
 
-        weather.temperature = main_data.get('temp')
-        weather.feels_like = main_data.get('feels_like')
-        weather.min_temperature = main_data.get('temp_min')
-        weather.max_temperature = main_data.get('temp_max')
-        weather.wind_speed = wind_data.get('speed')
-        weather.rain_1h = rain_data.get('rain_1h')
-        weather.snow_1h = snow_data.get('snow_1h')
-        weather.pressure = main_data.get('pressure')
-        weather.humidity = main_data.get('humidity')
-        weather.visibility = weather_data.get('visibility')
-        weather.cloudiness = clouds_data.get('all')
-        weather.save()
-        return weather
+        weather_conditions = weather_api_response.get('weather')[0]
+        atmospheric_conditions = weather_api_response.get('main')
+        wind_conditions = weather_api_response.get('wind')
+        cloud_conditions = weather_api_response.get('clouds')
+        rain_conditions = weather_api_response.get('rain', {})
+        snow_conditions = weather_api_response.get('snow', {})
 
-    def get_or_create(self, **kwargs):
-        weather = self.model(**kwargs)
-        current_time_utc = timezone.now()
-        one_hour_ago = current_time_utc - timedelta(hours=1)
-        weather = self.model.objects.filter(city=weather.city, created_at__gte=one_hour_ago).order_by('-created_at').first()
-        if not weather:
-            print('new')
-            return self.create(**kwargs), True
-
-        print('old')
-        return weather, False
+        weather_entry.status = weather_conditions.get('main')
+        weather_entry.status_description = weather_conditions.get('description')
+        weather_entry.temperature = atmospheric_conditions.get('temp')
+        weather_entry.feels_like = atmospheric_conditions.get('feels_like')
+        weather_entry.wind_speed = wind_conditions.get('speed')
+        weather_entry.rain_1h = rain_conditions.get('1h')
+        weather_entry.snow_1h = snow_conditions.get('1h')
+        weather_entry.pressure = atmospheric_conditions.get('pressure')
+        weather_entry.humidity = atmospheric_conditions.get('humidity')
+        weather_entry.visibility = weather_api_response.get('visibility')
+        weather_entry.cloudiness = cloud_conditions.get('all')
+        weather_entry.save()
+        return weather_entry

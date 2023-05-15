@@ -26,20 +26,28 @@
   <h1>Weather Update for {{ weather.city.name }}, {{ weather.city.country_name }}</h1>
   <table>
     <tr>
+      <th>Status</th>
+      <td>{{ weather.status }}: {{ weather.status_description }}</td>
+    </tr>
+    {% if weather.rain_1h %}
+      <tr>
+        <th>Rain volume</th>
+        <td>{{ weather.rain_1h }} mm</td>
+      </tr>
+    {%  endif %}
+    {% if weather.show_1h %}
+      <tr>
+        <th>Snow volume</th>
+        <td>{{ weather.show_1h }} mm</td>
+      </tr>
+    {%  endif %}
+    <tr>
       <th>Temperature</th>
       <td>{{ weather.temperature }}°C</td>
     </tr>
     <tr>
       <th>Feels Like</th>
       <td>{{ weather.feels_like }}°C</td>
-    </tr>
-    <tr>
-      <th>Min Temperature</th>
-      <td>{{ weather.min_temperature }}°C</td>
-    </tr>
-    <tr>
-      <th>Max Temperature</th>
-      <td>{{ weather.max_temperature }}°C</td>
     </tr>
     <tr>
       <th>Wind Speed</th>
@@ -61,18 +69,6 @@
       <th>Cloudiness</th>
       <td>{{ weather.cloudiness }}%</td>
     </tr>
-    {% if weather.rain_1h %}
-      <tr>
-        <th>Rain volume</th>
-        <td>{{ weather.rain_1h }} mm</td>
-      </tr>
-    {%  endif %}
-    {% if weather.show_1h %}
-      <tr>
-        <th>Show volume</th>
-        <td>{{ weather.show_1h }} mm</td>
-      </tr>
-    {%  endif %}
   </table>
 </body>
 </html>

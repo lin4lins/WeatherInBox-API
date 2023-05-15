@@ -92,10 +92,10 @@ class WeatherSerializer(serializers.ModelSerializer):
 
     Fields:
     - city: A foreign key to a City instance that the Weather data is associated with.
+    - status
+    - status_description
     - temperature: The current temperature in degrees Celsius.
     - feels_like: The current "feels like" temperature in degrees Celsius.
-    - min_temperature: The minimum temperature in degrees Celsius for the day.
-    - max_temperature: The maximum temperature in degrees Celsius for the day.
     - wind_speed: The current wind speed in meters per second.
     - rain_1h: The rain volume for the last 1 hour, in millimeters (optional).
     - snow_1h: The snow volume for the last 1 hour, in millimeters (optional).
@@ -103,8 +103,6 @@ class WeatherSerializer(serializers.ModelSerializer):
     - humidity: The current relative humidity as a percentage.
     - visibility: The current visibility in meters.
     - cloudiness: The current cloudiness as a percentage.
-    - sunrise: The time of sunrise for the current day.
-    - sunset: The time of sunset for the current day.
     - created_at: The date and time when the Weather instance was created.
 
     """
@@ -113,20 +111,11 @@ class WeatherSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Weather
-        fields = '__all__'
-        read_only_fields = (
-            'temperature',
-            'feels_like',
-            'min_temperature',
-            'max_temperature',
-            'wind_speed',
-            'rain_1h',
-            'snow_1h',
-            'pressure',
-            'humidity',
-            'visibility',
-            'cloudiness',
-            'sunrise',
-            'sunset',
-            'created_at',
-        )
+        fields = [
+            'city', 'status', 'status_description', 'temperature', 'feels_like', 'wind_speed',
+            'rain_1h', 'snow_1h', 'pressure', 'humidity', 'visibility', 'cloudiness'
+        ]
+        read_only_fields = [
+            'status', 'status_description', 'temperature', 'feels_like', 'wind_speed', 'rain_1h', 'snow_1h',
+            'pressure', 'humidity', 'visibility', 'cloudiness', 'created_at'
+        ]
