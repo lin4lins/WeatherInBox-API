@@ -44,7 +44,7 @@ class CitySerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = City
-        fields = ['name', 'country_name', 'latitude', 'longitude']
+        fields = ['id', 'name', 'country_name', 'latitude', 'longitude']
         read_only_fields = ['latitude', 'longitude']
 
 
@@ -69,7 +69,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = ['user', 'city', 'times_per_day', 'is_active', 'created_at', 'city_id']
+        fields = ['id', 'user', 'city', 'times_per_day', 'is_active', 'created_at', 'city_id']
         read_only_fields = ['user', 'city', 'created_at']
 
     def create(self, validated_data):
