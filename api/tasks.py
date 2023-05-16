@@ -4,6 +4,8 @@ from datetime import datetime
 import requests
 from celery import shared_task
 from django.core.mail import send_mail
+from django.db.models import F, Value
+from django.db.models.functions import Mod
 from django.template.loader import render_to_string
 
 from api.models import City, Subscription, Weather
@@ -13,8 +15,13 @@ from api.serializers import WeatherSerializer
 @shared_task
 def send_weather_for_actual_subscriptions():
     current_hour = datetime.now().hour
-    active_subs_at_current_hour = [subscription for subscription in Subscription.objects.filter(is_active=True)
-                                   if current_hour % (24 // subscription.times_per_day) == 0]
+    active_subs_at_current_hour = Subscription.objects.filter(
+        is_active=True,
+    ).annotate(
+        mod_result=Mod(Value(current_hour), Value(24) / F('times_per_day')),
+    ).filter(
+        mod_result=0,
+    )
     create_actual_weather_records(active_subs_at_current_hour)
     send_weather_notifications(active_subs_at_current_hour)
 
