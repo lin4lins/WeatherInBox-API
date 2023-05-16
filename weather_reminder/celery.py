@@ -16,6 +16,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'send-weather-notification': {
         'task': 'api.tasks.send_weather_for_actual_subscriptions',
-        'schedule': crontab(hour='*'),
+        'schedule': crontab(hour='*', minute=0),
     },
 }
