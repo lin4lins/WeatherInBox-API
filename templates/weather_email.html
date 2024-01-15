@@ -1,0 +1,74 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Update Email</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Weather Update for {{ weather.city.name }}, {{ weather.city.country_name }}</h1>
+  <table>
+    <tr>
+      <th>Status</th>
+      <td>{{ weather.status }}: {{ weather.status_description }}</td>
+    </tr>
+    {% if weather.rain_1h %}
+      <tr>
+        <th>Rain volume</th>
+        <td>{{ weather.rain_1h }} mm</td>
+      </tr>
+    {%  endif %}
+    {% if weather.show_1h %}
+      <tr>
+        <th>Snow volume</th>
+        <td>{{ weather.show_1h }} mm</td>
+      </tr>
+    {%  endif %}
+    <tr>
+      <th>Temperature</th>
+      <td>{{ weather.temperature }}°C</td>
+    </tr>
+    <tr>
+      <th>Feels Like</th>
+      <td>{{ weather.feels_like }}°C</td>
+    </tr>
+    <tr>
+      <th>Wind Speed</th>
+      <td>{{ weather.wind_speed }} m/s</td>
+    </tr>
+    <tr>
+      <th>Pressure</th>
+      <td>{{ weather.pressure }} hPa</td>
+    </tr>
+    <tr>
+      <th>Humidity</th>
+      <td>{{ weather.humidity }}%</td>
+    </tr>
+    <tr>
+      <th>Visibility</th>
+      <td>{{ weather.visibility }} m</td>
+    </tr>
+    <tr>
+      <th>Cloudiness</th>
+      <td>{{ weather.cloudiness }}%</td>
+    </tr>
+  </table>
+</body>
+</html>

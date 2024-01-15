@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   db:
     image: postgres
@@ -7,28 +8,67 @@ services:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-    networks:
-      - my-network
 
-  app:
+  api:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - .:/app
+      - .:/api
     ports:
       - "8000:8000"
-    environment:
-      - POSTGRES_NAME=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
     depends_on:
       - db
+      - redis
     env_file:
       - .env
-    networks:
-      my-network:
-        aliases:
-          - api
+
+  redis:
+    image: redis:alpine
+    env_file:
+      - .env
+
+  celery:
+    build: .
+    command: celery -A weather_reminder worker --loglevel=info --logfile=celery.log
+    volumes:
+      - .:/api
+    depends_on:
+      - redis
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=weather_reminder.settings
+    env_file:
+      - .env
+
+  celery-beat:
+    build: .
+    command: celery -A weather_reminder beat --loglevel=info
+    volumes:
+      - .:/api
+    depends_on:
+      - redis
+      - db
+    environment:
+      - DJANGO_SETTINGS_MODULE=weather_reminder.settings
+    env_file:
+      - .env
+
+  celery-flower:
+    build: .
+    command: celery -A weather_reminder flower --loglevel=DEBUG
+    environment:
+      - DJANGO_SETTINGS_MODULE=weather_reminder.settings
+    ports:
+      - "5555:5555"
+    volumes:
+      - .:/api
+    depends_on:
+      - db
+      - redis
+      - celery
+    env_file:
+      - .env
 
 networks:
-  my-network:
+  default:
+    name: api-site-network

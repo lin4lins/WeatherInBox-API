@@ -15,7 +15,7 @@ USER_DATA_2 = {'username': 'test2',
                'email': 'test2@gmail.com'}
 INVALID_PASSWORD = 'abc'
 UPDATED_USERNAME = 'updated_username'
-UPDATED_TIMES_PER_DAY = 8
+UPDATED_TIMES_PER_DAY = 12
 ADMIN_DATA = {'username': 'admin',
               'password': '12AdminPassword12',
               'first_name': 'Admin',

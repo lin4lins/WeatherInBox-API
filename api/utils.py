@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 import requests
 from rest_framework.exceptions import NotFound
 from retry import retry
@@ -26,3 +28,16 @@ def get_lat_lon_values(city_name: str, country_name: str) -> list:
         raise NotFound({'city_name': ['Not found.']})
 
     return [response.json()[0].get('lat'), response.json()[0].get('lon')]
+
+
+def get_weather_data_from_api(latitude: str, longitude: str) -> dict:
+    base_url = 'https://api.openweathermap.org/data/2.5/weather'
+    params = {'lat': latitude,
+              'lon': longitude,
+              'appid': API_KEY,
+              'units': 'metric'}
+    response = requests.get(base_url, params=params)
+    if response.status_code != 200:
+        raise NotFound({'location': ['Not found.']})
+
+    return response.json()

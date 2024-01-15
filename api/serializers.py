@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
-from api.models import City, Subscription, User
+from api.models import City, Subscription, User, Weather
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -45,7 +44,7 @@ class CitySerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = City
-        fields = '__all__'
+        fields = ['id', 'name', 'country_name', 'latitude', 'longitude']
         read_only_fields = ['latitude', 'longitude']
 
 
@@ -71,7 +70,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = ['id', 'user', 'city', 'times_per_day', 'is_active', 'created_at', 'city_id']
-        read_only_fields = ['user', 'created_at']
+        read_only_fields = ['user', 'city', 'created_at']
 
     def create(self, validated_data):
         user = self.context['request'].user
@@ -83,3 +82,40 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         return instance
+
+
+class WeatherSerializer(serializers.ModelSerializer):
+    """
+    Serializer class for the Weather model.
+
+    Serializes and deserializes Weather instances to and from JSON.
+
+    Fields:
+    - city: A foreign key to a City instance that the Weather data is associated with.
+    - status
+    - status_description
+    - temperature: The current temperature in degrees Celsius.
+    - feels_like: The current "feels like" temperature in degrees Celsius.
+    - wind_speed: The current wind speed in meters per second.
+    - rain_1h: The rain volume for the last 1 hour, in millimeters (optional).
+    - snow_1h: The snow volume for the last 1 hour, in millimeters (optional).
+    - pressure: The current atmospheric pressure in hPa.
+    - humidity: The current relative humidity as a percentage.
+    - visibility: The current visibility in meters.
+    - cloudiness: The current cloudiness as a percentage.
+    - created_at: The date and time when the Weather instance was created.
+
+    """
+
+    city = CitySerializer(read_only=True)
+
+    class Meta:
+        model = Weather
+        fields = [
+            'city', 'status', 'status_description', 'temperature', 'feels_like', 'wind_speed',
+            'rain_1h', 'snow_1h', 'pressure', 'humidity', 'visibility', 'cloudiness'
+        ]
+        read_only_fields = [
+            'status', 'status_description', 'temperature', 'feels_like', 'wind_speed', 'rain_1h', 'snow_1h',
+            'pressure', 'humidity', 'visibility', 'cloudiness', 'created_at'
+        ]
